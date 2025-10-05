@@ -1,12 +1,25 @@
 pipeline {
-  agent {
-    docker { image 'node:16-alpine' }
-  }
-  stages {
-    stage('Test') {
-      steps {
-        sh 'node --version'
-      }
+    // This tells Jenkins to grab any available agent.
+    // The real magic happens in the 'agent' block inside the stage.
+    agent any
+
+    stages {
+        stage('Build Docker Image') {
+            // This agent block is the fix.
+            // It tells Jenkins to run these steps inside a container
+            // based on the official 'docker:24.0.5' image.
+            agent {
+                docker { image 'docker:24.0.5' }
+            }
+            steps {
+                script {
+                    // This command will now work because it's running
+                    // inside a container that has Docker!
+                    sh 'docker --version'
+                    sh 'docker build -t my-app:latest .'
+                    sh 'docker images'
+                }
+            }
+        }
     }
-  }
 }
