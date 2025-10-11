@@ -31,19 +31,20 @@ pipeline {
     }
     stage('Build and Push Docker Image') {
             environment {
-                // IMPORTANT: Use your own Docker Hub username here, not abhishekf5
-                DOCKER_IMAGE = "ayanjyoti/ultimate-cicd:${BUILD_NUMBER}" 
+                DOCK-IMAGE = "ayanjyoti/ultimate-cicd:${BUILD_NUMBER}"
             }
             steps {
-                script {
-                    sh 'apt-get update'
-                    sh 'apt-get install -y docker.io'
-                    // FIX: Use env.DOCKER_IMAGE to correctly access the variable
-                    sh "docker build -t ${env.DOCKER_IMAGE} ." 
+                // FIX: Add the dir() block to change to the correct folder first
+                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    script {
+                        sh 'apt-get update'
+                        sh 'apt-get install -y docker.io'
+                        sh "docker build -t ${env.DOCKER_IMAGE} ."
 
-                    def dockerImage = docker.image("${env.DOCKER_IMAGE}")
-                    docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
-                        dockerImage.push()
+                        def dockerImage = docker.image("${env.DOCKER_IMAGE}")
+                        docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                            dockerImage.push()
+                        }
                     }
                 }
             }
